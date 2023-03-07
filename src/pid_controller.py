@@ -13,9 +13,9 @@ i_error = 0
 prev_error = 0
 mid_val = 0
 d_error = 0.0
-kp = 0.15
-ki = 0.000
-kd = 5.6
+kp = 0.15355
+ki = 0.00
+kd = 9.5
 
 steer_val = 0
 
@@ -97,10 +97,14 @@ def callback(odom_data):
     steer_val =  (kp * error) + (kd * d_error) + (ki * i_error)
     drive.steering_angle = steer_val
 
+   
+    # The above two if statements are optional. Just works good with this plot
+
     if drive.steering_angle < -0.1:
         drive.steering_angle = -0.1
     if drive.steering_angle > 0.1:
         drive.steering_angle = 0.1
+
     #drive.steering_angle = 0.01 * error
 
     drive_publisher.publish(drive)
