@@ -13,13 +13,15 @@ i_error = 0
 prev_error = 0
 mid_val = 0
 d_error = 0.0
-kp = 0.08
-kd = 0.0
-ki = 0.2
+kp = 0.15
+ki = 0.000
+kd = 5.6
+
+steer_val = 0
 
 def callback(odom_data):
 
-    global curr_time, prev_time, i_error, prev_error, kp, kd, ki, d_error, mid_val
+    global curr_time, prev_time, i_error, prev_error, kp, kd, ki, d_error, mid_val, steer_val
 
     while rospy.get_time() == 0:
         print("Clock not yet published")
@@ -86,31 +88,21 @@ def callback(odom_data):
     prev_error = error
 
     # Total PID Error
-    total_error = 0.2 * error
+    total_error = (kp * error) + (kd * d_error) + (ki * i_error)
 
     print("Total Error is", total_error)
 
-    # Giving Steering Angles
-
-   
-
-    # if d_error >= 1.0:
-    #     # Reached exitation phase
-    #     drive.steering_angle = 0.8
-    #     drive_publisher.publish(drive)
-    #     rospy.sleep(1.0)
-
-    #     drive.steering_angle = -0.8
-    #     drive_publisher.publish(drive)
-    #     rospy.sleep(1.0)
-
-
-
-
-
+ 
     drive.speed = 2.0
-    drive.steering_angle = 0.22 * total_error
-    #drive.steering_angle = kp * error + kd * d_error + i_error
+    steer_val =  (kp * error) + (kd * d_error) + (ki * i_error)
+    drive.steering_angle = steer_val
+
+    if drive.steering_angle < -0.1:
+        drive.steering_angle = -0.1
+    if drive.steering_angle > 0.1:
+        drive.steering_angle = 0.1
+    #drive.steering_angle = 0.01 * error
+
     drive_publisher.publish(drive)
 
     total_error_publisher = rospy.Publisher("/total_error", Float32, queue_size = 10)
