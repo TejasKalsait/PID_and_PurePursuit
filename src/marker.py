@@ -63,7 +63,7 @@ def plotreference(publisher, marker):
     fifth_x , fifth_y, fifth_z = 45.0 + offset, 5.0 + offset, 0.0 + offset
     sixth_x , sixth_y, sixth_z = 45.0 + offset, 10.0 + offset, 0.0 + offset
     seventh_x , seventh_y, seventh_z = 60.0 + offset, 10.0 + offset, 0.0 + offset
-    eightth_x , eightth_y, eightth_z = 45.0 + offset, 15.0 + offset, 0.0 + offset
+    eightth_x , eightth_y, eightth_z = 60.0 + offset, 15.0 + offset, 0.0 + offset
     ninth_x , ninth_y, ninth_z = 200.0 + offset, 15.0 + offset, 0.0 + offset
 
     # Zeroth point

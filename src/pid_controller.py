@@ -13,9 +13,9 @@ i_error = 0
 prev_error = 0
 mid_val = 0
 d_error = 0.0
-kp = 0.05
+kp = 0.08
 kd = 0.0
-ki = 0.01
+ki = 0.2
 
 def callback(odom_data):
 
@@ -86,7 +86,7 @@ def callback(odom_data):
     prev_error = error
 
     # Total PID Error
-    total_error = 0.1 * error
+    total_error = 0.2 * error
 
     print("Total Error is", total_error)
 
@@ -109,7 +109,7 @@ def callback(odom_data):
 
 
     drive.speed = 2.0
-    drive.steering_angle = 0.20 * total_error
+    drive.steering_angle = 0.22 * total_error
     #drive.steering_angle = kp * error + kd * d_error + i_error
     drive_publisher.publish(drive)
 
