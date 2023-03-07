@@ -88,7 +88,7 @@ def callback(odom_data):
     # Total PID Error
     total_error = 0.1 * error
 
-    #print("Total Error is", total_error)
+    print("Total Error is", total_error)
 
     # Giving Steering Angles
 
