@@ -9,7 +9,7 @@ from nav_msgs.msg import OccupancyGrid
 import numpy as np
 
 rospy.init_node("reference_plot")
-publisher = rospy.Publisher("/reference_line_2", Marker, queue_size = 10)
+publisher = rospy.Publisher("/reference_plot_2", Marker, queue_size = 10)
 marker = Marker()
 
 
@@ -47,9 +47,9 @@ def plotreference(publisher, marker, data):
 
         pointer = Point()
 
-        pointer.position.x = marks[1]
-        pointer.position.y = marks[2]
-        pointer.position.z = 0.0
+        pointer.x = marks[1]
+        pointer.y = marks[2]
+        pointer.z = 0.0
 
         marker.points.append(pointer)
 

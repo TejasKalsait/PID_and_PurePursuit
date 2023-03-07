@@ -3,7 +3,7 @@
     <node pkg="lab3" type="mapper.py" name="map_node"/>
     
     <!-- start the marker node -->
-    <node pkg="lab3" type="marker_persuit_2.py" name="marker_node_pp" output="screen"/>
+    <node pkg="lab3" type="marker_persuit.py" name="marker_node_pp" output="screen"/>
 
     <!-- start the PP controller node -->
     <!-- node pkg="lab3" type="pp_controller.py" name="pp_contoller_node"/> -->
