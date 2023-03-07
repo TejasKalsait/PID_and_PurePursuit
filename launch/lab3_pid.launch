@@ -1,0 +1,19 @@
+<launch>
+    <!-- start the mapper node -->
+    <node pkg="lab3" type="mapper.py" name="map_node"/>
+    
+    <!-- start the marker node -->
+    <node pkg="lab3" type="marker.py" name="marker_node" output="screen"/>
+
+    <!-- start the PID controller node -->
+    <node pkg="lab3" type="pid_controller.py" name="pid_contoller_node"/>
+
+    <!-- start the PID node -->
+    <!--node pkg="lab3" type="pid_controller.py" name="pid_node"/> -->
+    
+    <!-- launch a launch file as part of this launch file -->
+    <!-- start gazebo and rviz -->
+    <include file="$(find audubon-gazebo)/launch/lab3_world.launch"/>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find lab3)/rviz/lab3_pid.rviz"/>
+</launch>
