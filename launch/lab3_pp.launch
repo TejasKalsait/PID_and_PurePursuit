@@ -5,6 +5,9 @@
     <!-- start the marker node -->
     <node pkg="lab3" type="marker_persuit.py" name="marker_node_pp" output="screen"/>
 
+    <!-- start the pp_controller node -->
+    <!-- node pkg="lab3" type="pp_controller.py" name="pp_node_pp"/> -->
+
     <!-- start the PP controller node -->
     <!-- node pkg="lab3" type="pp_controller.py" name="pp_contoller_node"/> -->
 

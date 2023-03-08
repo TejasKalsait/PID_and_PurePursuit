@@ -98,12 +98,12 @@ def callback(odom_data):
     drive.steering_angle = steer_val
 
    
-    # The above two if statements are optional. Just works good with this plot
+    # From -25 degrees to + 25 degrees
 
-    if drive.steering_angle < -0.1:
-        drive.steering_angle = -0.1
-    if drive.steering_angle > 0.1:
-        drive.steering_angle = 0.1
+    if drive.steering_angle < -0.43:
+        drive.steering_angle = -0.43
+    if drive.steering_angle > 0.43:
+        drive.steering_angle = 0.43
 
     #drive.steering_angle = 0.01 * error
 

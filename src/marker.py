@@ -44,8 +44,6 @@ def plotreference(publisher, marker):
     marker.color.r = 1.0
     marker.color.g = 1.0
 
-    marker
-
     marker.pose.position.x = 0.0 + offset
     marker.pose.position.y = 0.0 + offset
     marker.pose.position.z = 0.0 + offset
