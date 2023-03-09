@@ -17,9 +17,9 @@ wheel_dist = 0.384
 curr_heading = None
 curr_y = None
 curr_x = None
-speed = 4.0
-kdd = 0.5
-l_dist_min = 2.75
+speed = 1.0
+kdd = 2.5
+l_dist_min = 2.25
 l_dist_max = 8.0
 l_dist = np.clip(kdd * speed, l_dist_min, l_dist_max)       # Lookahead dist
 print("The Look Distance is", l_dist)
@@ -34,9 +34,9 @@ curr_dist = None
 
 def main_callback(odom_msg, ref_msg):
     
-    global curr_heading, curr_y, curr_x, l_dist, l_point, min_dist, curr_heading, goal_heading, which_marker, curr_dist, wheel_dist, speed, min_dist, prev_l_point
+    global curr_heading, curr_y, curr_x, l_dist, l_point, min_dist, curr_heading, goal_heading, which_marker, curr_dist, wheel_dist, speed, min_dist
 
-    tolerance = 4.0
+    tolerance = 1.2
 
     #print("Entered Main callback")
     #rospy.sleep(1.0)
@@ -89,68 +89,81 @@ def main_callback(odom_msg, ref_msg):
 
             if look_marker_x2 + look_marker_y2 <= np.power(l_dist, 2) + tolerance and look_marker_x2 + look_marker_y2 >= np.power(l_dist, 2) - tolerance:
                     l_point = look_marker
-                    prev_l_point = l_point
-                    #print("Look_Ahead point is", l_point.id)
+                    
                     break
   
         if look_marker.id > which_marker + (3 * l_dist):
-            l_point = prev_l_point
             break
 
-    #Current Heading
+    print("Look_Ahead point is", l_point.id)
+    # #Current Heading
 
     min_dist = float('inf')
     curr_dist = None
     which_marker = None  
 
-    quater_x = odom_msg.pose.pose.orientation.x
-    quater_y = odom_msg.pose.pose.orientation.y
-    quater_z = odom_msg.pose.pose.orientation.z
-    quater_w = odom_msg.pose.pose.orientation.w
+    # quater_x = odom_msg.pose.pose.orientation.x
+    # quater_y = odom_msg.pose.pose.orientation.y
+    # quater_z = odom_msg.pose.pose.orientation.z
+    # quater_w = odom_msg.pose.pose.orientation.w
 
-    curr_quat_msg = euler_from_quaternion([quater_x, quater_y, quater_z, quater_w])
+    # curr_quat_msg = euler_from_quaternion([quater_x, quater_y, quater_z, quater_w])
 
-    curr_heading = curr_quat_msg[2] + math.pi
+    # curr_heading = curr_quat_msg[2] + math.pi
 
-    #Yaw is curr_heading
+    # #Yaw is curr_heading
 
-    #print("Current Heading is", curr_heading)
+    # #print("Current Heading is", curr_heading)
 
-    # GOAL HEADING
+    # # GOAL HEADING
 
-    dx = curr_x - l_point.pose.position.x
-    dy = curr_y - l_point.pose.position.y
+    # dx = curr_x - l_point.pose.position.x
+    # dy = curr_y - l_point.pose.position.y
 
-    # For point clicked
+    # # For point clicked
 
-    # dx = curr_x - point_msg.point.x
-    # dy = curr_y - point_msg.point.y
+    # # dx = curr_x - point_msg.point.x
+    # # dy = curr_y - point_msg.point.y
 
-    goal_heading = math.atan2(dy, dx) % (2 * math.pi)
+    # goal_heading = math.atan2(dy, dx) % (2 * math.pi)
 
-    #print("Goal Heading is", goal_heading)
+    # #print("Goal Heading is", goal_heading)
 
-    turn_angle = (goal_heading - curr_heading + 3*math.pi) % (2*math.pi) - math.pi
+    #turn_angle = (goal_heading - curr_heading + 3*math.pi) % (2*math.pi) - math.pi
+
+    # PURE PURSUIT LOGIC
+
+    alpha = np.arctan2(l_point.pose.position.y, l_point.pose.position.x)
+
+    #alpha = np.arctan2(point_msg.point.y, point_msg.point.x)
+
+    # distance = ((odom_msg.pose.pose.position.x - l_point.pose.position.x)**2 + \
+    #                 (odom_msg.pose.pose.position.y - l_point.pose.position.y)**2)**0.5
+
+    # distance = ((odom_msg.pose.pose.position.x - point_msg.point.x)**2 + \
+    #             (odom_msg.pose.pose.position.y - point_msg.point.y)**2)**0.5
+
+    turn_angle = np.arctan((2 * np.sin(alpha))/(l_dist))
+
 
     if turn_angle > 0.43:
         turn_angle = 0.43
     elif turn_angle < -0.43:
         turn_angle = -0.43
 
-    distance = ((odom_msg.pose.pose.position.x - l_point.pose.position.x)**2 + \
-                    (odom_msg.pose.pose.position.y - l_point.pose.position.y)**2)**0.5
+
     
-    print(f"current: {curr_heading}, goal: {goal_heading}, change: {turn_angle}")
-    #print("Steering angle is", turn_angle)
+    #print(f"current: {curr_heading}, goal: {goal_heading}, change: {turn_angle}")
+    print("Steering angle is", turn_angle)
     
     drive_publisher = rospy.Publisher("/car_1/command", AckermannDrive, queue_size = 10)
     drive = AckermannDrive()
     drive.speed = speed
     drive.steering_angle = turn_angle
 
-    if distance < 0.5:
-        drive.speed = 0
-        drive.steering_angle = 0.0
+    # if distance < 0.5:
+    #     drive.speed = 0
+    #     drive.steering_angle = 0.0
 
     drive_publisher.publish(drive)
     
@@ -164,7 +177,6 @@ def pp_controller_def():
     ref_sub = message_filters.Subscriber("/reference_plot_2", MarkerArray)
     #point_sub = message_filters.Subscriber("/clicked_point", PointStamped)
     ts = message_filters.ApproximateTimeSynchronizer([odom_sub, ref_sub], queue_size = 2, slop = 1, allow_headerless = True)
-    #ts = message_filters.TimeSynchronizer([odom_sub, ref_sub], queue_size = 2)
     print("TimeSync Done, Registerning callback")
     ts.registerCallback(main_callback)
 
