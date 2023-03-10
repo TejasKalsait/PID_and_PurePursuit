@@ -15,13 +15,14 @@ mid_val = 0
 d_error = 0.0
 kp = 0.15355
 ki = 0.00
-kd = 9.5
+kd = 10.5
+car_speed = rospy.get_param("Vmax")
 
 steer_val = 0
 
 def callback(odom_data):
 
-    global curr_time, prev_time, i_error, prev_error, kp, kd, ki, d_error, mid_val, steer_val
+    global curr_time, prev_time, i_error, prev_error, kp, kd, ki, d_error, mid_val, steer_val, car_speed
 
     while rospy.get_time() == 0:
         print("Clock not yet published")
@@ -93,7 +94,7 @@ def callback(odom_data):
     print("Total Error is", total_error)
 
  
-    drive.speed = 2.0
+    drive.speed = car_speed
     steer_val =  (kp * error) + (kd * d_error) + (ki * i_error)
     drive.steering_angle = steer_val
 

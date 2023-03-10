@@ -1,4 +1,9 @@
 <launch>
+    
+    <!-- <Setting the parameter for Vmax/> -->
+    <arg name="Vmax" default="2.0" type="double"/>
+    <param name="Vmax" value="$(arg Vmax)" type="double"/> 
+
     <!-- start the mapper node -->
     <node pkg="lab3" type="mapper.py" name="map_node"/>
     
