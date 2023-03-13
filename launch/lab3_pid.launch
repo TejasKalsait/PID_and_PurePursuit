@@ -1,7 +1,7 @@
 <launch>
     
     <!-- <Setting the parameter for Vmax/> -->
-    <arg name="Vmax" default="2.0" type="double"/>
+    <arg name="Vmax" default="2.0"/>
     <param name="Vmax" value="$(arg Vmax)" type="double"/> 
 
     <!-- start the mapper node -->

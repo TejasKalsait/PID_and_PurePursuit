@@ -12,16 +12,19 @@ from ackermann_msgs.msg import AckermannDrive
 from geometry_msgs.msg import PointStamped
 
 # /clicked_point
-wheel_dist = 0.384
+wheel_dist = 1.0
 
 curr_heading = None
 curr_y = None
 curr_x = None
-speed = 1.0
-kdd = 2.5
-l_dist_min = 2.25
-l_dist_max = 8.0
-l_dist = np.clip(kdd * speed, l_dist_min, l_dist_max)       # Lookahead dist
+#car_speed = rospy.get_param("Vmax")
+car_speed = 1.5 
+kdd = 2.0
+
+# l_dist_min = 2.25
+# l_dist_max = 8.0
+# l_dist = np.clip(kdd * speed, l_dist_min, l_dist_max)       # Lookahead dist
+l_dist = kdd * car_speed
 print("The Look Distance is", l_dist)
 l_point = None      # Lookahead point
 min_dist = float('inf')
@@ -34,9 +37,9 @@ curr_dist = None
 
 def main_callback(odom_msg, ref_msg):
     
-    global curr_heading, curr_y, curr_x, l_dist, l_point, min_dist, curr_heading, goal_heading, which_marker, curr_dist, wheel_dist, speed, min_dist
+    global curr_heading, curr_y, curr_x, l_dist, l_point, min_dist, curr_heading, goal_heading, which_marker, curr_dist, wheel_dist, car_speed, min_dist
 
-    tolerance = 1.2
+    tolerance = 3.0
 
     #print("Entered Main callback")
     #rospy.sleep(1.0)
@@ -65,38 +68,85 @@ def main_callback(odom_msg, ref_msg):
         #print("Curr",curr_dist)
         if curr_dist < min_dist:
             min_dist = curr_dist
-            which_marker = imarker.id
+            which_marker = imarker
+            
+        if min_dist < 1.0:
+            break
         #print("Min", min_dist)
 
         
     
     # Now, which_marker contains the ID of the closent marker and min_dist is how far away 
     #print("Car X is", curr_x)
-    print("ID of the closest marker is", which_marker, "and distance is", min_dist)
+    print("ID of the closest marker is", which_marker.id, "and distance is", min_dist)
+
+    # Plotting the closest point
+    # marker_publisher = rospy.Publisher("/additional_points", Marker, queue_size = 10)
+    # marker = Marker()
+    # marker.scale = 0.2
+    # marker.action = marker.ADD
+    # marker.type = marker.SPHERE
+    # marker.header.frame_id = 'odom'
+
+    # marker.pose.position.x = which_marker.pose.position.x
+    # marker.pose.position.y = which_marker.pose.position.y
+
+    # marker.color.a = 1.0
+    # marker.color.r = 1.0
+    # marker.color.g = 0.0
+    # marker.color.b = 1.0
+
+    # marker_publisher.publish(marker)
+
 
     # Markers strting from closest point to until lookahead distance
 
-    for look_marker in all_markers:
+    #######################
 
-        if look_marker.id > which_marker:
-            #print("starting with marker", look_marker.id)
-            # Starting with first marker and ending with 3*ld
-            look_marker_x2 = np.power(look_marker.pose.position.x - curr_x, 2)
-            look_marker_y2 = np.power(look_marker.pose.position.y - curr_y, 2)
+    l_point = ref_msg.markers[which_marker.id + 4]
+    
+     
 
-            #print(look_marker_x2 + look_marker_y2)
-            #print(np.power(l_dist, 2))
+    # for look_marker in all_markers:
 
-            if look_marker_x2 + look_marker_y2 <= np.power(l_dist, 2) + tolerance and look_marker_x2 + look_marker_y2 >= np.power(l_dist, 2) - tolerance:
-                    l_point = look_marker
+    #     if look_marker.id > which_marker.id:
+    #         print("starting with marker", look_marker.id)
+    #         # Starting with first marker and ending with 3*ld
+    #         look_marker_x2 = np.power(look_marker.pose.position.x - curr_x, 2)
+    #         look_marker_y2 = np.power(look_marker.pose.position.y - curr_y, 2)
+
+    #         print(look_marker_x2 + look_marker_y2)
+    #         print(np.power(l_dist, 2))
+
+    #         if look_marker_x2 + look_marker_y2 <= np.power(l_dist, 2) + tolerance and look_marker_x2 + look_marker_y2 >= np.power(l_dist, 2) - tolerance:
+    #                 l_point = look_marker
                     
-                    break
+                    
+                    
   
-        if look_marker.id > which_marker + (3 * l_dist):
-            break
+    #     if look_marker.id > which_marker.id + (2.5 * l_dist):
+    #         break
 
     print("Look_Ahead point is", l_point.id)
     # #Current Heading
+
+    # Plotting the look ahead point
+
+    # marker = Marker()
+    # marker.scale = 0.2
+    # marker.action = marker.ADD
+    # marker.type = marker.SPHERE
+    # marker.header.frame_id = 'odom'
+
+    # marker.pose.position.x = l_point.pose.position.x
+    # marker.pose.position.y = l_point.pose.position.y
+
+    # marker.color.a = 1.0
+    # marker.color.r = 1.0
+    # marker.color.g = 1.0
+    # marker.color.b = 0.0
+
+    # marker_publisher.publish(marker)
 
     min_dist = float('inf')
     curr_dist = None
@@ -143,13 +193,13 @@ def main_callback(odom_msg, ref_msg):
     # distance = ((odom_msg.pose.pose.position.x - point_msg.point.x)**2 + \
     #             (odom_msg.pose.pose.position.y - point_msg.point.y)**2)**0.5
 
-    turn_angle = np.arctan((2 * np.sin(alpha))/(l_dist))
+    turn_angle = np.arctan((2 * wheel_dist * np.sin(alpha))/(l_dist))
 
 
-    if turn_angle > 0.43:
-        turn_angle = 0.43
-    elif turn_angle < -0.43:
-        turn_angle = -0.43
+    if turn_angle > 0.1:
+        turn_angle = 0.1
+    elif turn_angle < -0.1:
+        turn_angle = -0.1
 
 
     
@@ -158,8 +208,10 @@ def main_callback(odom_msg, ref_msg):
     
     drive_publisher = rospy.Publisher("/car_1/command", AckermannDrive, queue_size = 10)
     drive = AckermannDrive()
-    drive.speed = speed
+    drive.speed = car_speed
     drive.steering_angle = turn_angle
+
+    # print("Distance is", distance)
 
     # if distance < 0.5:
     #     drive.speed = 0

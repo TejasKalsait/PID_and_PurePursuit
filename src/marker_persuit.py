@@ -50,7 +50,7 @@ def plotreference(data, array_publisher):
 
 if __name__ == '__main__':
     
-    rate = rospy.Rate(0.25)
+    rate = rospy.Rate(25)
 
     data = np.loadtxt("/home/cse4568/catkin_ws/src/lab3/lab3_track.csv", skiprows = 1, dtype = float, delimiter = ',')
     

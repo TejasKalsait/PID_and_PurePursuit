@@ -8,7 +8,7 @@ if __name__ == "__main__":
     rospy.init_node("map_pub")
 
     pub = rospy.Publisher(name="/map", data_class=OccupancyGrid, queue_size=1)
-    rate = rospy.Rate(0.25)
+    rate = rospy.Rate(25)
 
     map_data = [0]
 
