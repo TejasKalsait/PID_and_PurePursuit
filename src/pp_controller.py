@@ -18,11 +18,11 @@ curr_heading = None
 curr_y = None
 curr_x = None
 #car_speed = rospy.get_param("Vmax")
-car_speed = 1.5 
-kdd = 2.0
+car_speed = 4.0
+kdd = 0.7
 
-# l_dist_min = 2.25
-# l_dist_max = 8.0
+l_dist_min = 2.0
+l_dist_max = 4.5
 # l_dist = np.clip(kdd * speed, l_dist_min, l_dist_max)       # Lookahead dist
 l_dist = kdd * car_speed
 print("The Look Distance is", l_dist)
@@ -69,9 +69,9 @@ def main_callback(odom_msg, ref_msg):
         if curr_dist < min_dist:
             min_dist = curr_dist
             which_marker = imarker
-            
-        if min_dist < 1.0:
-            break
+
+        # if min_dist < 1.5:
+        #     break
         #print("Min", min_dist)
 
         
@@ -101,89 +101,72 @@ def main_callback(odom_msg, ref_msg):
 
     # Markers strting from closest point to until lookahead distance
 
-    #######################
+    # Manual l_point
 
-    l_point = ref_msg.markers[which_marker.id + 4]
+    # l_point = ref_msg.markers[which_marker.id + 5]
     
      
 
-    # for look_marker in all_markers:
+    for look_marker in all_markers:
 
-    #     if look_marker.id > which_marker.id:
-    #         print("starting with marker", look_marker.id)
-    #         # Starting with first marker and ending with 3*ld
-    #         look_marker_x2 = np.power(look_marker.pose.position.x - curr_x, 2)
-    #         look_marker_y2 = np.power(look_marker.pose.position.y - curr_y, 2)
+        if look_marker.id > which_marker.id:
+            print("starting with marker", look_marker.id)
+            # Starting with first marker and ending with 3*ld
+            look_marker_x2 = np.power(look_marker.pose.position.x - curr_x, 2)
+            look_marker_y2 = np.power(look_marker.pose.position.y - curr_y, 2)
 
-    #         print(look_marker_x2 + look_marker_y2)
-    #         print(np.power(l_dist, 2))
+            print(look_marker_x2 + look_marker_y2)
+            print(np.power(l_dist, 2))
 
-    #         if look_marker_x2 + look_marker_y2 <= np.power(l_dist, 2) + tolerance and look_marker_x2 + look_marker_y2 >= np.power(l_dist, 2) - tolerance:
-    #                 l_point = look_marker
+            if look_marker_x2 + look_marker_y2 <= np.power(l_dist, 2) + tolerance and look_marker_x2 + look_marker_y2 >= np.power(l_dist, 2) - tolerance:
+                    l_point = look_marker
                     
                     
                     
   
-    #     if look_marker.id > which_marker.id + (2.5 * l_dist):
-    #         break
+        if look_marker.id > which_marker.id + (2.5 * l_dist):
+            break
 
     print("Look_Ahead point is", l_point.id)
-    # #Current Heading
 
-    # Plotting the look ahead point
-
-    # marker = Marker()
-    # marker.scale = 0.2
-    # marker.action = marker.ADD
-    # marker.type = marker.SPHERE
-    # marker.header.frame_id = 'odom'
-
-    # marker.pose.position.x = l_point.pose.position.x
-    # marker.pose.position.y = l_point.pose.position.y
-
-    # marker.color.a = 1.0
-    # marker.color.r = 1.0
-    # marker.color.g = 1.0
-    # marker.color.b = 0.0
-
-    # marker_publisher.publish(marker)
 
     min_dist = float('inf')
     curr_dist = None
     which_marker = None  
+    
+    #Current Heading
 
-    # quater_x = odom_msg.pose.pose.orientation.x
-    # quater_y = odom_msg.pose.pose.orientation.y
-    # quater_z = odom_msg.pose.pose.orientation.z
-    # quater_w = odom_msg.pose.pose.orientation.w
+    quater_x = odom_msg.pose.pose.orientation.x
+    quater_y = odom_msg.pose.pose.orientation.y
+    quater_z = odom_msg.pose.pose.orientation.z
+    quater_w = odom_msg.pose.pose.orientation.w
 
-    # curr_quat_msg = euler_from_quaternion([quater_x, quater_y, quater_z, quater_w])
+    curr_quat_msg = euler_from_quaternion([quater_x, quater_y, quater_z, quater_w])
 
-    # curr_heading = curr_quat_msg[2] + math.pi
+    curr_heading = curr_quat_msg[2] + math.pi
 
-    # #Yaw is curr_heading
+    #print("Curr Heading is", curr_heading)
 
-    # #print("Current Heading is", curr_heading)
+    # GOAL HEADING
 
-    # # GOAL HEADING
+    dx = curr_x - l_point.pose.position.x
+    dy = curr_y - l_point.pose.position.y
 
-    # dx = curr_x - l_point.pose.position.x
-    # dy = curr_y - l_point.pose.position.y
+    # For point clicked
 
-    # # For point clicked
+    # dx = curr_x - point_msg.point.x
+    # dy = curr_y - point_msg.point.y
 
-    # # dx = curr_x - point_msg.point.x
-    # # dy = curr_y - point_msg.point.y
+    goal_heading = math.atan2(dy, dx) % (2 * math.pi)
 
-    # goal_heading = math.atan2(dy, dx) % (2 * math.pi)
+    #print("Goal Heading is", goal_heading)
 
-    # #print("Goal Heading is", goal_heading)
 
-    #turn_angle = (goal_heading - curr_heading + 3*math.pi) % (2*math.pi) - math.pi
+    turn_angle = (goal_heading - curr_heading + 3 * math.pi) % (2 * math.pi) - math.pi
 
     # PURE PURSUIT LOGIC
 
-    alpha = np.arctan2(l_point.pose.position.y, l_point.pose.position.x)
+    #alpha = np.arctan2(l_point.pose.position.y, l_point.pose.position.x)
 
     #alpha = np.arctan2(point_msg.point.y, point_msg.point.x)
 
@@ -193,29 +176,23 @@ def main_callback(odom_msg, ref_msg):
     # distance = ((odom_msg.pose.pose.position.x - point_msg.point.x)**2 + \
     #             (odom_msg.pose.pose.position.y - point_msg.point.y)**2)**0.5
 
-    turn_angle = np.arctan((2 * wheel_dist * np.sin(alpha))/(l_dist))
+    #turn_angle = np.arctan((2 * wheel_dist * np.sin(alpha))/(l_dist))
 
 
-    if turn_angle > 0.1:
-        turn_angle = 0.1
-    elif turn_angle < -0.1:
-        turn_angle = -0.1
+    if turn_angle > 0.43:
+        turn_angle = 0.43
+    elif turn_angle < -0.43:
+        turn_angle = -0.43
 
 
     
-    #print(f"current: {curr_heading}, goal: {goal_heading}, change: {turn_angle}")
-    print("Steering angle is", turn_angle)
+    print(f"current: {curr_heading}, goal: {goal_heading}, change: {turn_angle}")
+    #print("Steering angle is", turn_angle)
     
     drive_publisher = rospy.Publisher("/car_1/command", AckermannDrive, queue_size = 10)
     drive = AckermannDrive()
     drive.speed = car_speed
     drive.steering_angle = turn_angle
-
-    # print("Distance is", distance)
-
-    # if distance < 0.5:
-    #     drive.speed = 0
-    #     drive.steering_angle = 0.0
 
     drive_publisher.publish(drive)
     
