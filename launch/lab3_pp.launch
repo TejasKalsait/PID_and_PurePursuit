@@ -1,7 +1,7 @@
 <launch>
     
     <!-- <Setting the parameter for Vmax/> -->
-    <arg name="Vmax" default="3.0"/>
+    <arg name="Vmax" default="4.0"/>
     <param name="Vmax" value="$(arg Vmax)" type="double"/> 
 
     <!-- start the mapper node -->
@@ -15,7 +15,7 @@
     
     <!-- launch a launch file as part of this launch file -->
     <!-- start gazebo and rviz -->
-    <include file="$(find audubon-gazebo)/launch/lab3_world.launch"/>
+    <!-- <include file="$(find audubon-gazebo)/launch/lab3_world.launch"/> -->
 
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find lab3)/rviz/lab3_pp.rviz"/>
 </launch>

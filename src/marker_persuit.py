@@ -4,13 +4,19 @@ import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
 from std_msgs.msg import Float32
+from nav_msgs.msg import Odometry
+import rospkg
+from os import path
+
+ros_root = rospkg.get_ros_root()
+r = rospkg.RosPack()
+file_path = r.get_path("lab3")
+tracker = path.join(file_path, 'lab3_track.csv')
 
 array_publisher = rospy.Publisher("/reference_plot_2", MarkerArray, queue_size = 2)
 
-
-
-
 rospy.init_node("reference_plot")
+
 
 def plotreference(data, array_publisher):
 
@@ -44,7 +50,10 @@ def plotreference(data, array_publisher):
 
         markerarray.markers.append(marker)
 
-        array_publisher.publish(markerarray)
+    
+    
+    array_publisher.publish(markerarray)
+
 
 
 
@@ -52,10 +61,12 @@ if __name__ == '__main__':
     
     rate = rospy.Rate(25)
 
-    data = np.loadtxt("/home/cse4568/catkin_ws/src/lab3/lab3_track.csv", skiprows = 1, dtype = float, delimiter = ',')
+    data = np.loadtxt(tracker, skiprows = 1, dtype = float, delimiter = ',')
+    
     
 
     while not rospy.is_shutdown():
-        #rospy.Subscriber("/car_1/base/odom", Odometry, callback = get_frameid)
+
         plotreference(data, array_publisher)
+
         rate.sleep()

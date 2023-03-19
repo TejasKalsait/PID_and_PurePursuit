@@ -17,11 +17,11 @@ wheel_dist = 1.0
 curr_heading = None
 curr_y = None
 curr_x = None
-#car_speed = rospy.get_param("Vmax")
-car_speed = 4.0
-kdd = 0.7
+car_speed = rospy.get_param("Vmax")
+# car_speed = 4.0
+kdd = 1.45
 
-l_dist_min = 2.0
+l_dist_min = 1.5
 l_dist_max = 4.5
 # l_dist = np.clip(kdd * speed, l_dist_min, l_dist_max)       # Lookahead dist
 l_dist = kdd * car_speed
@@ -36,10 +36,11 @@ curr_dist = None
 
 
 def main_callback(odom_msg, ref_msg):
+
     
     global curr_heading, curr_y, curr_x, l_dist, l_point, min_dist, curr_heading, goal_heading, which_marker, curr_dist, wheel_dist, car_speed, min_dist
 
-    tolerance = 3.0
+    tolerance = 4.0
 
     #print("Entered Main callback")
     #rospy.sleep(1.0)
@@ -78,26 +79,7 @@ def main_callback(odom_msg, ref_msg):
     
     # Now, which_marker contains the ID of the closent marker and min_dist is how far away 
     #print("Car X is", curr_x)
-    print("ID of the closest marker is", which_marker.id, "and distance is", min_dist)
-
-    # Plotting the closest point
-    # marker_publisher = rospy.Publisher("/additional_points", Marker, queue_size = 10)
-    # marker = Marker()
-    # marker.scale = 0.2
-    # marker.action = marker.ADD
-    # marker.type = marker.SPHERE
-    # marker.header.frame_id = 'odom'
-
-    # marker.pose.position.x = which_marker.pose.position.x
-    # marker.pose.position.y = which_marker.pose.position.y
-
-    # marker.color.a = 1.0
-    # marker.color.r = 1.0
-    # marker.color.g = 0.0
-    # marker.color.b = 1.0
-
-    # marker_publisher.publish(marker)
-
+    #print("ID of the closest marker is", which_marker.id, "and distance is", min_dist)
 
     # Markers strting from closest point to until lookahead distance
 
@@ -110,13 +92,13 @@ def main_callback(odom_msg, ref_msg):
     for look_marker in all_markers:
 
         if look_marker.id > which_marker.id:
-            print("starting with marker", look_marker.id)
+            #print("starting with marker", look_marker.id)
             # Starting with first marker and ending with 3*ld
             look_marker_x2 = np.power(look_marker.pose.position.x - curr_x, 2)
             look_marker_y2 = np.power(look_marker.pose.position.y - curr_y, 2)
 
-            print(look_marker_x2 + look_marker_y2)
-            print(np.power(l_dist, 2))
+            #print(look_marker_x2 + look_marker_y2)
+            #print(np.power(l_dist, 2))
 
             if look_marker_x2 + look_marker_y2 <= np.power(l_dist, 2) + tolerance and look_marker_x2 + look_marker_y2 >= np.power(l_dist, 2) - tolerance:
                     l_point = look_marker
@@ -124,16 +106,41 @@ def main_callback(odom_msg, ref_msg):
                     
                     
   
-        if look_marker.id > which_marker.id + (2.5 * l_dist):
+        if look_marker.id > which_marker.id + (5.0 * l_dist):
             break
 
-    print("Look_Ahead point is", l_point.id)
+    #print("Look_Ahead point is", l_point.id)
 
 
+    # Changing Markers
+
+    marker_publisher = rospy.Publisher("/reference_plot_2", MarkerArray, queue_size = 10)
+    
+    
+    for i in range(len(ref_msg.markers)):
+
+        ref_msg.markers[i].color.r = 0.0
+        ref_msg.markers[i].color.g = 1.0
+        ref_msg.markers[i].color.b = 1.0
+        ref_msg.markers[i].color.a = 1.0
+    
+    
+    ref_msg.markers[which_marker.id].color.r = 1.0
+    ref_msg.markers[which_marker.id].color.g = 0.0
+    ref_msg.markers[which_marker.id].color.b = 1.0
+    ref_msg.markers[which_marker.id].color.a = 1.0
+
+    ref_msg.markers[l_point.id].color.r = 0.0
+    ref_msg.markers[l_point.id].color.g = 1.0
+    ref_msg.markers[l_point.id].color.b = 0.0
+    ref_msg.markers[l_point.id].color.a = 1.0
+
+    marker_publisher.publish(ref_msg)
+    
     min_dist = float('inf')
     curr_dist = None
     which_marker = None  
-    
+
     #Current Heading
 
     quater_x = odom_msg.pose.pose.orientation.x
@@ -142,6 +149,7 @@ def main_callback(odom_msg, ref_msg):
     quater_w = odom_msg.pose.pose.orientation.w
 
     curr_quat_msg = euler_from_quaternion([quater_x, quater_y, quater_z, quater_w])
+
 
     curr_heading = curr_quat_msg[2] + math.pi
 
@@ -179,14 +187,14 @@ def main_callback(odom_msg, ref_msg):
     #turn_angle = np.arctan((2 * wheel_dist * np.sin(alpha))/(l_dist))
 
 
-    if turn_angle > 0.43:
-        turn_angle = 0.43
-    elif turn_angle < -0.43:
-        turn_angle = -0.43
+    if turn_angle > 0.436332:
+        turn_angle = 0.436332
+    elif turn_angle < -0.436332:
+        turn_angle = -0.436332
 
 
     
-    print(f"current: {curr_heading}, goal: {goal_heading}, change: {turn_angle}")
+    #print(f"current: {curr_heading}, goal: {goal_heading}, change: {turn_angle}")
     #print("Steering angle is", turn_angle)
     
     drive_publisher = rospy.Publisher("/car_1/command", AckermannDrive, queue_size = 10)
@@ -207,11 +215,11 @@ def pp_controller_def():
     #point_sub = message_filters.Subscriber("/clicked_point", PointStamped)
     ts = message_filters.ApproximateTimeSynchronizer([odom_sub, ref_sub], queue_size = 2, slop = 1, allow_headerless = True)
     print("TimeSync Done, Registerning callback")
+    #rospy.sleep(1.5)
     ts.registerCallback(main_callback)
 
 if __name__ == '__main__':
     
     # Do something
-
     pp_controller_def()
     rospy.spin()
