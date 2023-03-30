@@ -12,6 +12,7 @@ ros_root = rospkg.get_ros_root()
 r = rospkg.RosPack()
 file_path = r.get_path("lab3")
 tracker = path.join(file_path, 'lab3_track.csv')
+print("Tracker is", tracker)
 
 array_publisher = rospy.Publisher("/reference_plot_2", MarkerArray, queue_size = 2)
 
